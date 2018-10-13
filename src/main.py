@@ -33,6 +33,17 @@ def ping(): # respond to server Pings.
 def sendmsg(msg, target=channel): # sends messages to the target.
   ircsock.send(bytes("PRIVMSG "+ target +" :"+ msg +"\n", "UTF-8"))
 
+#for future use / whois command
+def whois(nickname):
+  ircsock.send(bytes("WHOIS "+ nickname + "\n", "UTF-8"))
+
+#for future use / whowas command
+def whowas(nickname):
+  ircsock.send(bytes("WHOWAS "+ nickname + "\n", "UTF-8"))
+
+#for future use / users command
+def users(server):
+  ircsock.send(bytes("USERS "+ server + "\n", "UTF-8"))
 
 def main():
     print("Entered main")
@@ -49,6 +60,16 @@ def main():
             if len(name) < 17:
                 if message.find('Hi ' + botnick) != -1:
                   sendmsg("Hello " + name + "!")
+                if message.find('Who are you?') != -1:
+                  sendmsg("I am an IRC user") != -1
+                if message.find("Are you a bot?") != -1:
+                  sendmsg("Do I look like one?")
+                if message.find("What is your real name?") != -1:
+                  sendmsg("Why do you ask that?")
+                if message.find("Bye") != -1 or message.find("bye") != -1:
+                  sendmsg("Goodbye Friend!")
+                if message.find("Fuck") != -1 or message.find("bitch") != -1 or message.find("dick") != -1:
+                  sendmsg("You should not use this kind of language!")   
                 if message[:5].find('.tell') != -1:
                   target = message.split(' ', 1)[1]
                   if target.find(' ') != -1:
