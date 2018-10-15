@@ -9,7 +9,7 @@ botnick = "IamaPythonBot" # Your bots nick
 adminname = "OrderChaos" #Your IRC nickname.
 exitcode = "bye " + botnick
 
-print("Iniaialized variables")
+print("Initialized variables")
 
 ircsock.connect((server, 6667)) # Here we connect to the server using the port 6667
 print("Connection Successful")
@@ -34,8 +34,13 @@ def sendmsg(msg, target=channel): # sends messages to the target.
   ircsock.send(bytes("PRIVMSG "+ target +" :"+ msg +"\n", "UTF-8"))
 
 #for future use / whois command
-def whois(nickname):
+def whois(nickname, target=channel):
   ircsock.send(bytes("WHOIS "+ nickname + "\n", "UTF-8"))
+  ircmsg = ""
+  while ircmsg.find("End of /WHOIS list.") == -1:  
+    ircmsg = ircsock.recv(2048).decode("UTF-8")
+    ircmsg = ircmsg.strip('\n\r')
+    sendmsg(ircmsg, target)
 
 #for future use / whowas command
 def whowas(nickname):
@@ -51,25 +56,28 @@ def main():
     while 1:
         ircmsg = ircsock.recv(2048).decode("UTF-8")
         ircmsg = ircmsg.strip('\n\r')
-        print(ircmsg)
+        print("[*] %s"%ircmsg)
 
         if ircmsg.find("PRIVMSG") != -1:
             name = ircmsg.split('!',1)[0][1:]
             message = ircmsg.split('PRIVMSG',1)[1].split(':',1)[1]
 
             if len(name) < 17:
+                if message.find('whois') != -1 or message.find('WHOIS') != -1:
+                  nickname = message.split(' ')[1]
+                  whois(nickname, name)                  
                 if message.find('Hi ' + botnick) != -1:
-                  sendmsg("Hello " + name + "!")
+                    sendmsg("Hello " + name + "!", name)
                 if message.find('Who are you?') != -1:
-                  sendmsg("I am an IRC user") != -1
+                  sendmsg("I am an IRC user", name) != -1
                 if message.find("Are you a bot?") != -1:
-                  sendmsg("Do I look like one?")
+                  sendmsg("Do I look like one?",name)
                 if message.find("What is your real name?") != -1:
-                  sendmsg("Why do you ask that?")
+                  sendmsg("Why do you ask that?", name)
                 if message.find("Bye") != -1 or message.find("bye") != -1:
-                  sendmsg("Goodbye Friend!")
+                  sendmsg("Goodbye Friend!", name)
                 if message.find("Fuck") != -1 or message.find("bitch") != -1 or message.find("dick") != -1:
-                  sendmsg("You should not use this kind of language!")   
+                  sendmsg("You should not use this kind of language!", name)   
                 if message[:5].find('.tell') != -1:
                   target = message.split(' ', 1)[1]
                   if target.find(' ') != -1:
@@ -77,7 +85,7 @@ def main():
                       target = target.split(' ')[0]
                   else:
                       target = name
-                      message = "Could not parse. The message should be in the format of ‘.tell [target] [message]’ to work properly."
+                      message = "Could not parse. The message should be in the format of '.tell [target] [message]' to work properly."
                   sendmsg(message, target)
             if name.lower() == adminname.lower() and message.rstrip() == exitcode:
                   #If we do get sent the exit code, then send a message (no target defined, so to the channel) saying we’ll do it, but making clear we’re sad to leave.
